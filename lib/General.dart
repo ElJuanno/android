@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'planes.dart'; // Asegúrate de tener el archivo planes.dart con la clase PlanesScreen
+import 'planes.dart';
 
 void main() => runApp(MyApp());
 

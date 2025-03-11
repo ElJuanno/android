@@ -1,153 +1,178 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'Register.dart'; // Importar Register.dart
+import 'package:pru/RegisterInstitucion.dart';
+import 'package:pru/RegisterEspecialista.dart';
+import 'package:pru/Register.dart';
+import 'package:pru/Sobre.dart';
+import 'package:pru/Medidas.dart';
 
-class LoginPage extends StatelessWidget {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  Future<void> login(BuildContext context) async {
-    String email = emailController.text;
-    String password = passwordController.text;
-
-    final String apiUrl = "https://tudominio.com/backend/login.php";
-
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData["success"] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Bienvenido, login correcto")),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseData["message"] ?? "Error en login")),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error en la conexión: ${response.statusCode}")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Ocurrió un error: $e")),
-      );
-    }
-  }
-
+class LoginScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/logo.png', height: 120),
-              SizedBox(height: 20),
-              Text(
-                'Iniciar Sesión',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6CBF3F), // Verde del logo
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Correo Electrónico',
-                  prefixIcon: Icon(Icons.email, color: Color(0xFF6CBF3F)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Color(0xFF6CBF3F)),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Contraseña',
-                  prefixIcon: Icon(Icons.lock, color: Color(0xFF6CBF3F)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Color(0xFF6CBF3F)),
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  login(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF6CBF3F), // Verde del logo
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                child: Text(
-                  'Iniciar Sesión',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => RegisterPage()),
-                  );
-                },
-                child: Text(
-                  '¿No tienes una cuenta? Regístrate',
-                  style: TextStyle(
-                    color: Color(0xFF6CBF3F),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class HomePage extends StatelessWidget {
+class _LoginScreenState extends State<LoginScreen> {
+  String selectedRegisterType = 'Usuario';
+  List<String> registerOptions = ['Institución', 'Especialista', 'Usuario'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Pantalla Principal"),
-        backgroundColor: Color(0xFF6CBF3F),
-      ),
-      body: Center(
-        child: Text("Bienvenido a la aplicación"),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Logo
+            Image.asset('assets/logo.png', height: 100),
+            SizedBox(height: 10),
+            Text(
+              'Dietali no sustituye el consejo médico profesional.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+            SizedBox(height: 20),
+            // Email Field
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Correo',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+              ),
+            ),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu correo electrónico',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            // Password Field
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Contraseña',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+              ),
+            ),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu contraseña',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Login Button
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NutritionalMeasuresScreen()),
+                );
+              },
+              child: Text(
+                "Iniciar Sesion",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            // Register Dropdown with Custom Design
+            Text("\n¿No tienes cuenta? Crea Una", style: TextStyle(color: Colors.black)),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.green),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedRegisterType,
+                  icon: Icon(Icons.arrow_drop_down, color: Colors.green),
+                  isExpanded: true,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedRegisterType = newValue!;
+                    });
+                  },
+                  items: registerOptions.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedRegisterType == 'Institución') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterInstitutionScreen()),
+                  );
+                } else if (selectedRegisterType == 'Especialista') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterSpecialistScreen()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                "Registrarse",
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+            SizedBox(height: 30),
+            // About Us Section
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutScreen()),
+                );
+              },
+              child: Text(
+                "Sobre Nosotros",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,33 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'register.dart';
+import 'login.dart';
 import 'Sobre.dart'; // Tu dashboard
 
-class LoginScreen extends StatefulWidget {
+class RegisterScreen extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   bool isLoading = false;
   final String baseUrl = 'http://209.38.70.113/api';
 
-  void login() async {
+  void register() async {
     setState(() {
       isLoading = true;
     });
 
-    var url = Uri.parse('$baseUrl/login');
+    var url = Uri.parse('$baseUrl/register');
     var response = await http.post(
       url,
       headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
       body: jsonEncode({
+        'name': nameController.text.trim(),
         'email': emailController.text.trim(),
         'password': passwordController.text.trim(),
+        'password_confirmation': confirmPasswordController.text.trim(),
       }),
     );
 
@@ -35,14 +39,14 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = false;
     });
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => AboutScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error en login: ${response.body}')),
+        SnackBar(content: Text('Error al registrar: ${response.body}')),
       );
     }
   }
@@ -58,35 +62,44 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 80),
               Image.asset('assets/logo.png', height: 100),
               SizedBox(height: 20),
-              Text(
-                'Dietali no sustituye el consejo médico profesional.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green),
-              ),
-              SizedBox(height: 30),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Correo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
-              ),
+              Text('Crea tu cuenta', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
               TextField(
-                controller: emailController,
+                controller: nameController,
                 decoration: InputDecoration(
-                  hintText: 'Ingresa tu correo electrónico',
+                  labelText: 'Nombre',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                 ),
               ),
               SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Contraseña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Correo electrónico',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                ),
               ),
+              SizedBox(height: 15),
               TextField(
                 controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'Ingresa tu contraseña',
+                  labelText: 'Contraseña',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                ),
+              ),
+              SizedBox(height: 15),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Confirmar contraseña',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
@@ -94,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 30),
               ElevatedButton(
-                onPressed: isLoading ? null : login,
+                onPressed: isLoading ? null : register,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
@@ -102,15 +115,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: isLoading
                     ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Iniciar Sesión', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    : Text('Registrarse', style: TextStyle(color: Colors.white)),
               ),
               SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+                  Navigator.pop(context);
                 },
                 child: Text(
-                  '¿No tienes cuenta? Crea una',
+                  '¿Ya tienes cuenta? Inicia sesión',
                   style: TextStyle(color: Colors.green, decoration: TextDecoration.underline),
                 ),
               ),

@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  http: ^0.13.0
+  http: ^1.2.0
+  shared_preferences: ^2.2.2 # ← NUEVO: guarda el token
   url_launcher: ^6.1.14
 
 dev_dependencies:

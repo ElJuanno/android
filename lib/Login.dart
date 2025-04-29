@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'register.dart';
-import 'Sobre.dart'; // Tu dashboard
+import 'General.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -36,9 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      String token = data['token'];
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', token);
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => AboutScreen()),
+        MaterialPageRoute(builder: (context) => MyApp()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,71 +57,84 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 80),
-              Image.asset('assets/logo.png', height: 100),
-              SizedBox(height: 20),
-              Text(
-                'Dietali no sustituye el consejo médico profesional.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green),
-              ),
-              SizedBox(height: 30),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Correo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Ingresa tu correo electrónico',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+      backgroundColor: Colors.green[50],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                Image.asset('assets/logo.png', height: 120),
+                SizedBox(height: 20),
+                Text(
+                  'Bienvenido a Dietali',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.green[800]),
                 ),
-              ),
-              SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Contraseña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
-              ),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Ingresa tu contraseña',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                SizedBox(height: 10),
+                Text(
+                  'Tu app para un estilo de vida saludable',
+                  style: TextStyle(fontSize: 14, color: Colors.green[700]),
                 ),
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: isLoading ? null : login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                SizedBox(height: 40),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Correo electrónico', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green[800])),
                 ),
-                child: isLoading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Iniciar Sesión', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-              SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-                },
-                child: Text(
-                  '¿No tienes cuenta? Crea una',
-                  style: TextStyle(color: Colors.green, decoration: TextDecoration.underline),
+                SizedBox(height: 5),
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.email, color: Colors.green),
+                    hintText: 'ejemplo@correo.com',
+                    filled: true,
+                    fillColor: Colors.green[100],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Contraseña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green[800])),
+                ),
+                SizedBox(height: 5),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.lock, color: Colors.green),
+                    hintText: 'Ingresa tu contraseña',
+                    filled: true,
+                    fillColor: Colors.green[100],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: isLoading ? null : login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 5,
+                  ),
+                  child: isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Iniciar Sesión', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+                SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+                  },
+                  child: Text(
+                    '¿No tienes cuenta? Regístrate aquí',
+                    style: TextStyle(color: Colors.green[800], decoration: TextDecoration.underline),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

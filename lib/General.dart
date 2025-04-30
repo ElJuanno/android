@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'planes.dart';
+import 'profile.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,7 +11,9 @@ class MyApp extends StatelessWidget {
       title: 'Plan Alimenticio Diabetes',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
+        scaffoldBackgroundColor: Colors.green[50],
+        appBarTheme: AppBarTheme(backgroundColor: Colors.green[700]),
       ),
       home: VistaGeneralScreen(),
     );
@@ -37,25 +40,34 @@ class VistaGeneralScreen extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.green[700],
               ),
-              child: Text(
-                'Menú',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.account_circle, color: Colors.white, size: 48),
+                  SizedBox(height: 10),
+                  Text(
+                    'Menú Principal',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person),
+              leading: Icon(Icons.person, color: Colors.green[800]),
               title: Text('Perfil'),
               onTap: () {
-                // Navegar a la sección de perfil
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                );
               },
             ),
             ListTile(
-              leading: Icon(Icons.restaurant_menu),
+              leading: Icon(Icons.restaurant_menu, color: Colors.green[800]),
               title: Text('Plan Alimenticio'),
               onTap: () {
-                // Navegamos a la pantalla de planes alimenticios
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => PlanesScreen()),
@@ -63,7 +75,7 @@ class VistaGeneralScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.note_add),
+              leading: Icon(Icons.note_add, color: Colors.green[800]),
               title: Text('Registro de Comidas'),
               onTap: () {
                 // Navegar a la sección de registro de comidas
@@ -76,16 +88,20 @@ class VistaGeneralScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Tarjeta de Plan Alimenticio
+            Text(
+              'Selecciona una opción para comenzar',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.green[800]),
+            ),
+            SizedBox(height: 20),
             Card(
               elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               child: ListTile(
-                leading: Icon(Icons.restaurant_menu, color: Colors.blue, size: 40),
+                leading: Icon(Icons.restaurant_menu, color: Colors.green[600], size: 40),
                 title: Text('Plan Alimenticio'),
                 subtitle: Text('Visualiza y sigue tu plan alimenticio'),
                 trailing: Icon(Icons.arrow_forward),
                 onTap: () {
-                  // Navegamos a la pantalla de planes alimenticios
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => PlanesScreen()),
@@ -94,11 +110,11 @@ class VistaGeneralScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            // Tarjeta de Registro de Glucosa
             Card(
               elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               child: ListTile(
-                leading: Icon(Icons.healing, color: Colors.red, size: 40),
+                leading: Icon(Icons.healing, color: Colors.green[600], size: 40),
                 title: Text('Registro de Glucosa'),
                 subtitle: Text('Registra tus niveles de glucosa'),
                 trailing: Icon(Icons.arrow_forward),
@@ -108,11 +124,11 @@ class VistaGeneralScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            // Tarjeta de Registro de Comidas
             Card(
               elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               child: ListTile(
-                leading: Icon(Icons.note_add, color: Colors.green, size: 40),
+                leading: Icon(Icons.note_add, color: Colors.green[600], size: 40),
                 title: Text('Registro de Comidas'),
                 subtitle: Text('Registra los alimentos consumidos'),
                 trailing: Icon(Icons.arrow_forward),

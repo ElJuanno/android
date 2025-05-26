@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'Login.dart'; // Importar la pantalla de login
+import 'package:pru/Login.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Dietali',
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.green),
+      home: LoginScreen(), // 🔥 Inicia en Login
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
     );
   }
 }

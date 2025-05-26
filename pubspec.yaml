@@ -27,3 +27,5 @@ flutter:
     - assets/Dieta.png  # Asegúrate de que esta ruta sea correcta
     - assets/logo.png
     - assets/sobre.png
+    - assets/plan_alimenticio.png
+    - assets/registro_comidas.png

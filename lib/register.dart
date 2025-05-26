@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'General.dart';
 
@@ -18,6 +19,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isLoading = false;
   final String baseUrl = 'http://209.38.70.113/api';
 
+  void showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text("Aceptar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void register() async {
     setState(() {
       isLoading = true;
@@ -26,7 +47,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     var url = Uri.parse('$baseUrl/register');
     var response = await http.post(
       url,
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       body: jsonEncode({
         'name': nameController.text.trim(),
         'email': emailController.text.trim(),
@@ -40,14 +64,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyApp()),
-      );
+      handleSuccessfulRegistration(response);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al registrar: ${response.body}')),
-      );
+      handleRegisterError(response);
+    }
+  }
+
+  void handleSuccessfulRegistration(http.Response response) async {
+    try {
+      var data = json.decode(response.body);
+
+      if (data.containsKey('token')) {
+        String token = data['token'];
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyApp()),
+        );
+      } else {
+        showErrorDialog(context, "No se recibió un token. Verifica tu conexión.");
+      }
+    } catch (e) {
+      showErrorDialog(context, "Error al procesar la respuesta del servidor.");
+    }
+  }
+
+  void handleRegisterError(http.Response response) {
+    try {
+      var data = json.decode(response.body);
+
+      if (data.containsKey('message')) {
+        showErrorDialog(context, data['message']);
+      } else if (data.containsKey('errors')) {
+        var errors = data['errors'];
+        if (errors.containsKey('email')) {
+          showErrorDialog(context, "Correo ya registrado.");
+        } else if (errors.containsKey('password')) {
+          showErrorDialog(context, "Error en la contraseña.");
+        } else {
+          showErrorDialog(context, "Error al registrar. Verifica los datos.");
+        }
+      } else {
+        showErrorDialog(context, "Error al registrar. Intenta nuevamente.");
+      }
+    } catch (e) {
+      showErrorDialog(context, "Error inesperado. Intenta nuevamente.");
     }
   }
 
@@ -66,7 +130,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(height: 20),
                 Text(
                   'Crea tu cuenta',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[800]),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[800],
+                  ),
                 ),
                 SizedBox(height: 30),
                 _buildTextField('Nombre', Icons.person, nameController, false),
@@ -87,7 +155,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: isLoading
                       ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Registrarse', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      : Text(
+                    'Registrarse',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                 ),
                 SizedBox(height: 20),
                 TextButton(

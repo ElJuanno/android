@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'planes.dart';
 import 'profile.dart';
+import 'registro_com.dart';
 
 void main() => runApp(MyApp());
 
@@ -25,18 +26,22 @@ class VistaGeneralScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Vista General'),
+        title: Text('Estrategias'),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(Icons.person, size: 28),
             onPressed: () {
-              // Acción para notificaciones
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
             },
-          )
+          ),
         ],
       ),
       drawer: Drawer(
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
@@ -78,7 +83,10 @@ class VistaGeneralScreen extends StatelessWidget {
               leading: Icon(Icons.note_add, color: Colors.green[800]),
               title: Text('Registro de Comidas'),
               onTap: () {
-                // Navegar a la sección de registro de comidas
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegistroComidaScreen()),
+                );
               },
             ),
           ],
@@ -86,57 +94,97 @@ class VistaGeneralScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Selecciona una opción para comenzar',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.green[800]),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Selecciona una opción para comenzar',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.green[800]),
+              ),
+              SizedBox(height: 20),
+              _buildCard(
+                context,
+                'assets/plan_alimenticio.png',
+                'Plan Alimenticio',
+                'Consulta tu plan alimenticio',
+                PlanesScreen(),
+              ),
+              SizedBox(height: 16),
+              _buildCard(
+                context,
+                'assets/registro_comidas.png',
+                'Registro de Comidas',
+                'Registra tus comidas diarias',
+                RegistroComidaScreen(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, String imagePath, String title, String subtitle, Widget destination) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => destination),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-            SizedBox(height: 20),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: Icon(Icons.restaurant_menu, color: Colors.green[600], size: 40),
-                title: Text('Plan Alimenticio'),
-                subtitle: Text('Visualiza y sigue tu plan alimenticio'),
-                trailing: Icon(Icons.arrow_forward),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PlanesScreen()),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                imagePath,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey[300],
+                    child: Icon(Icons.broken_image, color: Colors.red, size: 40),
                   );
                 },
               ),
             ),
-            SizedBox(height: 10),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: Icon(Icons.healing, color: Colors.green[600], size: 40),
-                title: Text('Registro de Glucosa'),
-                subtitle: Text('Registra tus niveles de glucosa'),
-                trailing: Icon(Icons.arrow_forward),
-                onTap: () {
-                  // Navegar a la sección de registro de glucosa
-                },
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[800]),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 14, color: Colors.green[600]),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 10),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: Icon(Icons.note_add, color: Colors.green[600], size: 40),
-                title: Text('Registro de Comidas'),
-                subtitle: Text('Registra los alimentos consumidos'),
-                trailing: Icon(Icons.arrow_forward),
-                onTap: () {
-                  // Navegar a la sección de registro de comidas
-                },
-              ),
-            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.green[600], size: 20),
           ],
         ),
       ),

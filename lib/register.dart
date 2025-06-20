@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'login.dart';
-import 'General.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -10,113 +7,181 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController nombreController = TextEditingController();
+  final TextEditingController apellidoPaternoController = TextEditingController();
+  final TextEditingController apellidoMaternoController = TextEditingController();
+  final TextEditingController curpController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  String selectedSexo = 'Selecciona sexo';
   bool isLoading = false;
-  final String baseUrl = 'http://209.38.70.113/api';
+  String? errorMessage;
 
   void register() async {
     setState(() {
       isLoading = true;
+      errorMessage = null;
     });
 
-    var url = Uri.parse('$baseUrl/register');
-    var response = await http.post(
-      url,
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'name': nameController.text.trim(),
-        'email': emailController.text.trim(),
-        'password': passwordController.text.trim(),
-        'password_confirmation': confirmPasswordController.text.trim(),
-      }),
-    );
+    await Future.delayed(Duration(seconds: 2)); // Simulación de API
+
+    // Validación básica de contraseñas
+    if (passwordController.text != confirmPasswordController.text) {
+      setState(() {
+        errorMessage = 'Las contraseñas no coinciden';
+        isLoading = false;
+      });
+      return;
+    }
 
     setState(() {
       isLoading = false;
     });
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyApp()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al registrar: ${response.body}')),
-      );
-    }
+    // Redirigir al home
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green[50],
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: 60),
-                Image.asset('assets/logo.png', height: 120),
-                SizedBox(height: 20),
-                Text(
-                  'Crea tu cuenta',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[800]),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 25),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 30),
-                _buildTextField('Nombre', Icons.person, nameController, false),
-                SizedBox(height: 15),
-                _buildTextField('Correo electrónico', Icons.email, emailController, false),
-                SizedBox(height: 15),
-                _buildTextField('Contraseña', Icons.lock, passwordController, true),
-                SizedBox(height: 15),
-                _buildTextField('Confirmar contraseña', Icons.lock_outline, confirmPasswordController, true),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: isLoading ? null : register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[700],
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                child: Column(
+                  children: [
+                    Image.asset('assets/logo.png', height: 100),
+                    SizedBox(height: 20),
+                    Text(
+                      'Crea tu cuenta',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Tu app para un estilo de vida saludable',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 20),
+                    if (errorMessage != null) ...[
+                      Text(
+                        errorMessage!,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                    _buildTextField(nombreController, 'Nombre'),
+                    _buildTextField(apellidoPaternoController, 'Apellido paterno'),
+                    _buildTextField(apellidoMaternoController, 'Apellido materno'),
+                    _buildDropdown(),
+                    _buildTextField(curpController, 'CURP (opcional)'),
+                    _buildTextField(emailController, 'Correo electrónico'),
+                    _buildTextField(passwordController, 'Contraseña', obscure: true),
+                    _buildTextField(confirmPasswordController, 'Confirmar contraseña', obscure: true),
+                    SizedBox(height: 30),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 60),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: isLoading ? null : register,
+                      child: isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                        'Registrarse',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 15),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                child: Text(
+                  '¿Ya tienes cuenta? Inicia sesión',
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    decoration: TextDecoration.underline,
                   ),
-                  child: isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Registrarse', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
-                SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    '¿Ya tienes cuenta? Inicia sesión',
-                    style: TextStyle(color: Colors.green[800], decoration: TextDecoration.underline),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller, bool isPassword) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.green[700]),
-        filled: true,
-        fillColor: Colors.green[100],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+  Widget _buildTextField(TextEditingController controller, String hint, {bool obscure = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.edit, color: Colors.green),
+          hintText: hint,
+          filled: true,
+          fillColor: Colors.green[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: DropdownButtonFormField<String>(
+        value: selectedSexo,
+        items: ['Selecciona sexo', 'Masculino', 'Femenino']
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
+        onChanged: (value) {
+          setState(() => selectedSexo = value!);
+        },
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.transgender, color: Colors.green),
+          filled: true,
+          fillColor: Colors.green[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
       ),
     );
   }

@@ -1,125 +1,167 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'login.dart';
+import 'services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Map<String, dynamic>? userData;
+  final _formKey = GlobalKey<FormState>();
+
+  Map<String, dynamic> perfil = {};
   bool isLoading = true;
-  final String baseUrl = 'http://209.38.70.113/api';
+
+  final TextEditingController nombre = TextEditingController();
+  final TextEditingController apellidoP = TextEditingController();
+  final TextEditingController apellidoM = TextEditingController();
+  final TextEditingController sexo = TextEditingController();
+  final TextEditingController curp = TextEditingController();
+  final TextEditingController correo = TextEditingController();
+  final TextEditingController peso = TextEditingController();
+  final TextEditingController altura = TextEditingController();
+  String? imc;
 
   @override
   void initState() {
     super.initState();
-    fetchUserProfile();
+    loadPerfil();
   }
 
-  Future<void> fetchUserProfile() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-
-    if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Token no encontrado.')));
-      return;
-    }
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/user'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
+  Future<void> loadPerfil() async {
+    try {
+      final data = await ApiService.getPerfil();
       setState(() {
-        userData = json.decode(response.body);
+        perfil = data;
+        nombre.text = data['persona']['nombre'] ?? '';
+        apellidoP.text = data['persona']['apellido_p'] ?? '';
+        apellidoM.text = data['persona']['apellido_m'] ?? '';
+        sexo.text = data['persona']['sexo'] ?? '';
+        curp.text = data['persona']['curp'] ?? '';
+        correo.text = data['persona']['correo'] ?? '';
+        peso.text = data['medidas']?['peso']?.toString() ?? '';
+        altura.text = data['medidas']?['altura']?.toString() ?? '';
+        imc = data['imc']?.toString();
         isLoading = false;
       });
-    } else {
-      print('Error al cargar perfil: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al obtener perfil')));
+    } catch (e) {
+      print('Error cargando perfil: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar el perfil')),
+      );
+      setState(() => isLoading = false);
     }
   }
 
-  void logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+  Future<void> saveChanges() async {
+    if (_formKey.currentState!.validate()) {
+      final double? pesoVal = double.tryParse(peso.text);
+      final double? alturaVal = double.tryParse(altura.text);
+      if (pesoVal != null && alturaVal != null && alturaVal > 0) {
+        setState(() {
+          imc = (pesoVal / (alturaVal * alturaVal)).toStringAsFixed(2);
+        });
+      }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-          (route) => false,
-    );
+      try {
+        await ApiService.updatePerfil({
+          'nombre': nombre.text,
+          'apellido_p': apellidoP.text,
+          'apellido_m': apellidoM.text,
+          'sexo': sexo.text,
+          'curp': curp.text,
+          'correo': correo.text,
+          'peso': pesoVal,
+          'altura': alturaVal,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cambios guardados correctamente')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar: $e')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: const Color(0xFFF0FFF4),
       appBar: AppBar(
-        title: Text('Perfil del Usuario'),
-        backgroundColor: Colors.green[700],
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: logout,
-          )
-        ],
+        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text('Mi Perfil'),
+        leading: BackButton(color: Colors.black),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 55,
-              backgroundColor: Colors.green[100],
-              child: Icon(Icons.person, size: 60, color: Colors.green[800]),
-            ),
-            SizedBox(height: 20),
-            Text(
-              userData?['name'] ?? 'Nombre no disponible',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[900]),
-            ),
-            SizedBox(height: 10),
-            Text(
-              userData?['email'] ?? 'Correo no disponible',
-              style: TextStyle(fontSize: 16, color: Colors.green[700]),
-            ),
-            SizedBox(height: 30),
-            Divider(color: Colors.green[200]),
-            ListTile(
-              leading: Icon(Icons.badge, color: Colors.green[800]),
-              title: Text('Nombre'),
-              subtitle: Text(userData?['name'] ?? 'N/A'),
-            ),
-            ListTile(
-              leading: Icon(Icons.email, color: Colors.green[800]),
-              title: Text('Correo electrónico'),
-              subtitle: Text(userData?['email'] ?? 'N/A'),
-            ),
-            Spacer(),
-            ElevatedButton.icon(
-              onPressed: logout,
-              icon: Icon(Icons.logout),
-              label: Text("Cerrar sesión"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[600],
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 4,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Icon(Icons.account_circle, size: 100, color: Colors.green.shade700),
+              const SizedBox(height: 10),
+              const Text(
+                'Consulta y actualiza tu información',
+                style: TextStyle(fontSize: 16),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _buildInput('Nombre', nombre),
+              _buildInput('Apellido paterno', apellidoP),
+              _buildInput('Apellido materno', apellidoM),
+              _buildInput('Sexo (H o M)', sexo),
+              _buildInput('CURP', curp, optional: true),
+              _buildInput('Correo electrónico', correo),
+              _buildInput('Peso (kg)', peso),
+              _buildInput('Altura (m)', altura),
+              if (imc != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('IMC: $imc', style: TextStyle(color: Colors.grey[600])),
+                ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Guardar cambios', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInput(String label, TextEditingController controller, {bool optional = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.green[50],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        validator: optional
+            ? null
+            : (value) => (value == null || value.isEmpty) ? 'Campo requerido' : null,
       ),
     );
   }

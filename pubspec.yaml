@@ -14,6 +14,7 @@ dependencies:
   http: ^1.2.0
   shared_preferences: ^2.2.2 # ← NUEVO: guarda el token
   url_launcher: ^6.1.14
+  fl_chart: ^0.64.0
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +28,4 @@ flutter:
     - assets/Dieta.png  # Asegúrate de que esta ruta sea correcta
     - assets/logo.png
     - assets/sobre.png
+    - assets/Gif1.gif

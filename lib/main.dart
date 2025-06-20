@@ -5,7 +5,7 @@ import 'login.dart';
 import 'Profile.dart';
 import 'Medidas.dart';
 import 'package:pru/Seguimiento.dart';
-import 'package:pru/Planes.dart';
+import 'Planes.dart';
 import 'services/api_service.dart';
 
 void main() {
